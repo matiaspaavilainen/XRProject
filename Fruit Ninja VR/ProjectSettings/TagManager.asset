@@ -5,10 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - grabbable
-  - edge1
-  - edge2
-  - tip
   - ground
+  - blade
+  - sliceable
   layers:
   - Default
   - TransparentFX

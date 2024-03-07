@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using EzySlice;
 
@@ -12,22 +10,28 @@ public class Sliceable : MonoBehaviour
     {
         startGame = GameObject.FindAnyObjectByType<StartGame>();
         gameObject.layer = LayerMask.NameToLayer("whole");
+        gameObject.tag = "sliceable";
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        GameObject cube = collision.gameObject;
+        GameObject sword = collision.gameObject;
+        Sword swordScript = sword.GetComponent<Sword>();
 
-        // Check if the object that hit this one is one of the sword edges
-        if (cube.CompareTag("grabbable"))
+        // Check if the object that hit this one is the sword
+        if (sword.CompareTag("blade"))
         {
-            // Call a method to slice this object
-            SliceObject(cube);
+            // Player must swing the sword
+            if (swordScript.Velocity.magnitude > 1.5f)
+            {
+                SliceObject(sword);
+            }
 
-        } else if (cube.CompareTag("ground"))
+        } else if (sword.CompareTag("ground"))
         {
             startGame.strikes++;
-            Destroy(gameObject, 1f);
+            startGame.UpdateScoreText();
+            Destroy(gameObject, 0f);
         }
     }
 
@@ -38,7 +42,7 @@ public class Sliceable : MonoBehaviour
 
         // Get the position and direction of the slice
         Vector3 position = sword.transform.position;
-        Vector3 direction = sword.transform.right;
+        Vector3 direction = sword.transform.forward;
 
         // Use the Slicer class to slice the object
         SlicedHull hull = gameObject.Slice(position, direction, crossSectionMaterial);
@@ -53,6 +57,9 @@ public class Sliceable : MonoBehaviour
             upperHalf.layer = LayerMask.NameToLayer("sliced");
             lowerHalf.layer = LayerMask.NameToLayer("sliced");
 
+            upperHalf.tag = "sliceable";
+            lowerHalf.tag = "sliceable";
+
             // Add rigidbodies to the halves so they fall under gravity
             Rigidbody upperRb = upperHalf.AddComponent<Rigidbody>();
             Rigidbody lowerRb = lowerHalf.AddComponent<Rigidbody>();
@@ -60,16 +67,13 @@ public class Sliceable : MonoBehaviour
             // Add mesh colliders to the halves
             upperHalf.AddComponent<MeshCollider>().convex = true;
             lowerHalf.AddComponent<MeshCollider>().convex = true;
-            float force = 0.5f;
+            float force = 1f;
 
             upperRb.AddForce(direction * force, ForceMode.Impulse);
             lowerRb.AddForce(-direction * force, ForceMode.Impulse);
 
             // Destroy the original object
             Destroy(gameObject);
-
-            Destroy(upperHalf, 2f);
-            Destroy(lowerHalf, 2f);
         }
     }
 }

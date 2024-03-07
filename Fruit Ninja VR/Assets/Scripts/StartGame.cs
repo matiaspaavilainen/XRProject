@@ -10,6 +10,7 @@ public class StartGame : MonoBehaviour
     private bool isSpawning = false;
 
     private Coroutine spawnCoroutine;
+    public float force = 15.2f;
     public int strikes = 0;
     public int points = 0;
     private int highScore = 0;
@@ -37,6 +38,9 @@ public class StartGame : MonoBehaviour
 
             if (isSpawning && !IsInvoking(nameof(StartSpawning)))
             {   
+                points = 0;
+                strikes = 0;
+                UpdateScoreText();
                 InvokeRepeating(nameof(StartSpawning), 0, 2);
             }
             else if (!isSpawning)
@@ -48,6 +52,11 @@ public class StartGame : MonoBehaviour
 
     private void StopGame()
     {
+        foreach (var o in GameObject.FindGameObjectsWithTag("sliceable"))
+        {
+            Destroy(o);
+        }
+
         if (points > highScore)
         {
             highScore = points;
@@ -71,15 +80,16 @@ public class StartGame : MonoBehaviour
 
     IEnumerator SpawnObject()
     {
-        yield return new WaitForSeconds(Random.Range(1f, 4f));
+        yield return new WaitForSeconds(Random.Range(1f, 3f));
 
-        GameObject gameObject = Instantiate(sliceableObjectPrefab, new Vector3(0, 1f, 0), Quaternion.identity);
+        GameObject gameObject = Instantiate(sliceableObjectPrefab, new Vector3(0, 1f, 0.5f), Quaternion.identity);
         Rigidbody gameObjectRb = gameObject.GetComponent<Rigidbody>();
 
-        float force = 9.5f;
-        float randX = Random.Range(-0.1f, 0.1f);
-        Vector3 directionRandomizer = new(randX, 0, -0.05f);
+        float randX = Random.Range(-0.03f, 0.03f);
+
+        Vector3 directionRandomizer = new(randX, 0, -0.04f);
         gameObjectRb.AddForce((gameObject.transform.up + directionRandomizer) * force, ForceMode.Impulse);
+        gameObjectRb.AddTorque(Random.rotation.eulerAngles * 0.0001f, ForceMode.Impulse);
     }
 
     public void UpdateScoreText()

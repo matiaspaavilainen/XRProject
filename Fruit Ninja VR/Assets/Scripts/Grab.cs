@@ -1,6 +1,5 @@
-
-using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,17 +10,22 @@ public class CustomGrab : MonoBehaviour
     CustomGrab otherHand = null;
     public List<Transform> nearObjects = new List<Transform>();
     public Transform grabbedObject = null;
-    public InputActionReference action;
+    public InputActionReference grip;
+    public InputActionReference blade;
     public bool isRightHand = false;
     bool grabbing = false;
 
     private Vector3 previousPos;
     private Quaternion previousRot;
     private Vector3 grabOffset;
+    private bool isActive = false;
 
     private void Start()
     {
-        action.action.Enable();
+        grip.action.Enable();
+        blade.action.Enable();
+
+        blade.action.performed += BladeActivate;
 
         // Set the grab offset based on the hand
         grabOffset = isRightHand ? new Vector3(-0.01f, -0.02f, 0.008f) : new Vector3(0.01f, -0.02f, 0.008f);
@@ -36,7 +40,7 @@ public class CustomGrab : MonoBehaviour
 
     void Update()
 {
-    grabbing = action.action.IsPressed();
+    grabbing = grip.action.IsPressed();
     if (grabbing)
     {
         if (!grabbedObject)
@@ -48,8 +52,7 @@ public class CustomGrab : MonoBehaviour
             Quaternion deltaRot = transform.rotation * Quaternion.Inverse(previousRot);
 
             grabbedObject.position -= deltaPos; // Move object back by deltaPos
-            grabbedObject.rotation = deltaRot * grabbedObject.rotation; // Apply rotation
-            grabbedObject.position = transform.position + transform.TransformDirection(grabOffset); // Move object to controller
+            grabbedObject.SetPositionAndRotation(transform.position + transform.TransformDirection(grabOffset), deltaRot * grabbedObject.rotation); // Move object to controller
         }
     }
     else if (grabbedObject)
@@ -77,5 +80,18 @@ public class CustomGrab : MonoBehaviour
         Transform t = other.transform;
         if( t && t.tag.ToLower()=="grabbable")
             nearObjects.Remove(t);
+    }
+
+    private void BladeActivate(InputAction.CallbackContext context)
+    {
+        if (grabbedObject != null)
+        {
+            if (context.performed)
+            {
+                GameObject blade = grabbedObject.transform.GetChild(0).gameObject;
+                isActive = blade.activeSelf;
+                blade.SetActive(!isActive);
+            }
+        }
     }
 }
