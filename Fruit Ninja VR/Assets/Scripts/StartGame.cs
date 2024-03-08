@@ -10,7 +10,7 @@ public class StartGame : MonoBehaviour
     private bool isSpawning = false;
 
     private Coroutine spawnCoroutine;
-    public float force = 15.2f;
+    public float force;
     public int strikes = 0;
     public int points = 0;
     private int highScore = 0;
@@ -85,11 +85,11 @@ public class StartGame : MonoBehaviour
         GameObject gameObject = Instantiate(sliceableObjectPrefab, new Vector3(0, 1f, 0.5f), Quaternion.identity);
         Rigidbody gameObjectRb = gameObject.GetComponent<Rigidbody>();
 
-        float randX = Random.Range(-0.03f, 0.03f);
+        float randX = Random.Range(-0.04f, 0.04f);
 
         Vector3 directionRandomizer = new(randX, 0, -0.04f);
         gameObjectRb.AddForce((gameObject.transform.up + directionRandomizer) * force, ForceMode.Impulse);
-        gameObjectRb.AddTorque(Random.rotation.eulerAngles * 0.0001f, ForceMode.Impulse);
+        gameObjectRb.AddTorque(Random.rotation.eulerAngles * 0.00004f, ForceMode.Impulse);
     }
 
     public void UpdateScoreText()

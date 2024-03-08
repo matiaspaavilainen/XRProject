@@ -22,9 +22,10 @@ public class Sliceable : MonoBehaviour
         if (sword.CompareTag("blade"))
         {
             // Player must swing the sword
-            if (swordScript.Velocity.magnitude > 1.5f)
+            if (swordScript.Velocity.magnitude > 1f)
             {
-                SliceObject(sword);
+                Vector3 contactPoint = collision.contacts[0].point;
+                SliceObject(contactPoint, swordScript);
             }
 
         } else if (sword.CompareTag("ground"))
@@ -35,14 +36,14 @@ public class Sliceable : MonoBehaviour
         }
     }
 
-    void SliceObject(GameObject sword)
+    void SliceObject(Vector3 contactPoint, Sword swordScript)
     {
         startGame.points++;
         startGame.UpdateScoreText();
 
         // Get the position and direction of the slice
-        Vector3 position = sword.transform.position;
-        Vector3 direction = sword.transform.forward;
+        Vector3 position = contactPoint;
+        Vector3 direction = Vector3.Cross(swordScript.Velocity.normalized, Vector3.up);
 
         // Use the Slicer class to slice the object
         SlicedHull hull = gameObject.Slice(position, direction, crossSectionMaterial);
